@@ -5,7 +5,7 @@ import com.zeydie.telegram.meta.api.IDatabase;
 import com.zeydie.telegram.meta.api.managers.IDatabaseManager;
 import com.zeydie.telegram.meta.api.metas.IChannelMeta;
 import com.zeydie.telegram.meta.builders.QueryBuilder;
-import com.zeydie.telegram.meta.configs.SQLConfig;
+import com.zeydie.telegram.meta.configs.MetaSQLConfig;
 import com.zeydie.telegram.meta.data.ChannelMeta;
 import com.zeydie.telegram.meta.data.SupergroupMeta;
 import lombok.Cleanup;
@@ -24,7 +24,7 @@ import java.util.List;
 @Log4j2
 public final class ChannelMetaDatabaseSQL implements IDatabase, IChannelMeta {
     private IDatabaseManager databaseManager;
-    private SQLConfig.ChannelsMetaTable channelsMetaTable;
+    private MetaSQLConfig.ChannelsMetaTable channelsMetaTable;
 
     @Override
     public @NonNull Connection getConnection() {

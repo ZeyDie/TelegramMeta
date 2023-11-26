@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public final class SQLConfig {
+public final class MetaSQLConfig {
     private int autosaveMinutes = 1;
     @NonFinal
     private @NotNull String driver = Driver.class.getName();

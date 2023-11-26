@@ -4,7 +4,7 @@ import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.common.util.concurrent.Service;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zeydie.telegram.meta.api.managers.IDatabaseManager;
-import com.zeydie.telegram.meta.configs.SQLConfig;
+import com.zeydie.telegram.meta.configs.MetaSQLConfig;
 import com.zeydie.telegram.meta.data.ChannelMeta;
 import com.zeydie.telegram.meta.databases.sql.ChannelMetaDatabaseSQL;
 import lombok.NonNull;
@@ -21,7 +21,7 @@ public final class DatabaseSQLManager implements IDatabaseManager {
     @NotNull
     private final ChannelMetaDatabaseSQL channelMetaDatabaseSQL = new ChannelMetaDatabaseSQL();
 
-    private SQLConfig.ChannelsMetaTable channelsMetaTable;
+    private MetaSQLConfig.ChannelsMetaTable channelsMetaTable;
     private HikariDataSource hikariDataSource;
 
     private Service saveService;
@@ -32,16 +32,16 @@ public final class DatabaseSQLManager implements IDatabaseManager {
     }
 
     @Override
-    public @NonNull SQLConfig.ChannelsMetaTable getChannelsMetaTable() {
+    public @NonNull MetaSQLConfig.ChannelsMetaTable getChannelsMetaTable() {
         return this.channelsMetaTable;
     }
 
     @Override
-    public void setup(@NonNull final SQLConfig sqlConfig) {
+    public void setup(@NonNull final MetaSQLConfig metaSqlConfig) {
         log.debug("Setup configurations of sql...");
 
-        this.channelsMetaTable = sqlConfig.getChannelsMetaTable();
-        this.hikariDataSource = sqlConfig.getHikariDataSource();
+        this.channelsMetaTable = metaSqlConfig.getChannelsMetaTable();
+        this.hikariDataSource = metaSqlConfig.getHikariDataSource();
         this.saveService = new AbstractScheduledService() {
             @Override
             protected void runOneIteration() {
@@ -50,7 +50,7 @@ public final class DatabaseSQLManager implements IDatabaseManager {
 
             @Override
             protected @NotNull Scheduler scheduler() {
-                return Scheduler.newFixedRateSchedule(0, sqlConfig.getAutosaveMinutes(), TimeUnit.MINUTES);
+                return Scheduler.newFixedRateSchedule(0, metaSqlConfig.getAutosaveMinutes(), TimeUnit.MINUTES);
             }
         };
     }

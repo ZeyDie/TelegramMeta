@@ -17,7 +17,7 @@ public final class TDLib {
     private static final String libcryptoDll = "tdlib/windows/libcrypto-1_1-x64";
     private static final String libsslDll = "tdlib/windows/libssl-1_1-x64";
     private static final String zlibDll = "tdlib/windows/zlib1";
-    private static final String tdjniDll = "tdlib/windows/tdjni";
+    private static final String tdjniDll = "tdlib/tdjni";
 
     static {
         log.debug(System.getProperty("os.name"));
@@ -36,15 +36,15 @@ public final class TDLib {
 
     @SneakyThrows
     private static void extractAndLoadDll(@NonNull final String name) {
-        @Cleanup val inputStream = TDLib.class.getResourceAsStream("/" + name);
+        @Cleanup val inputStream = TDLib.class.getResourceAsStream(name);
 
         if (inputStream != null) {
             Files.copy(inputStream, Paths.get(name));
 
             log.debug("Extracted {}", name);
-
-            System.loadLibrary(name);
         }
+
+        System.loadLibrary(name);
     }
 
     @Getter

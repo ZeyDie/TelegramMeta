@@ -5,13 +5,14 @@ import com.google.common.util.concurrent.Service;
 import com.zeydie.tdlib.TDLib;
 import com.zeydie.telegram.meta.api.managers.IChannelMetaManager;
 import com.zeydie.telegram.meta.api.managers.IDatabaseManager;
-import com.zeydie.telegram.meta.configs.SQLConfig;
+import com.zeydie.telegram.meta.configs.MetaSQLConfig;
 import com.zeydie.telegram.meta.configs.TDLibConfig;
 import com.zeydie.telegram.meta.data.SupergroupMeta;
 import com.zeydie.telegram.meta.managers.ChannelMetaManager;
 import com.zeydie.telegram.meta.managers.DatabaseSQLManager;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
@@ -28,12 +29,14 @@ public final class TelegramMeta {
     @NonNull
     private final TDLib tdLib = new TDLib();
 
+    @Setter
     @Getter
     @NonNull
-    private final TDLibConfig TDLibConfig = new TDLibConfig();
+    private TDLibConfig TDLibConfig = new TDLibConfig();
+    @Setter
     @Getter
     @NonNull
-    private final SQLConfig sqlConfig = new SQLConfig();
+    private MetaSQLConfig metaSqlConfig = new MetaSQLConfig();
 
     @Getter
     @NonNull
@@ -86,7 +89,7 @@ public final class TelegramMeta {
     public void start() {
         this.tdLib.start();
 
-        this.databaseSQLManager.setup(this.sqlConfig);
+        this.databaseSQLManager.setup(this.metaSqlConfig);
     }
 
     public void init() {

@@ -9,5 +9,4 @@ public final class TDLibConfig {
     private @NotNull String apiHash = "apiHash";
     private @NotNull String phoneNumber = "+100000000";
     private boolean useTestServer;
-    private int price = 300;
 }
