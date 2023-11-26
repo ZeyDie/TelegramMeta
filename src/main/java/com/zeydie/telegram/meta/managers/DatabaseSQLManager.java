@@ -1,11 +1,10 @@
 package com.zeydie.telegram.meta.managers;
 
-import com.google.common.util.concurrent.AbstractScheduledService;
-import com.google.common.util.concurrent.Service;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zeydie.telegram.meta.api.managers.IDatabaseManager;
 import com.zeydie.telegram.meta.configs.MetaSQLConfig;
 import com.zeydie.telegram.meta.data.ChannelMeta;
+import com.zeydie.telegram.meta.data.SupergroupMeta;
 import com.zeydie.telegram.meta.databases.sql.ChannelMetaDatabaseSQL;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -14,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Log4j2
 public final class DatabaseSQLManager implements IDatabaseManager {
@@ -23,8 +21,6 @@ public final class DatabaseSQLManager implements IDatabaseManager {
 
     private MetaSQLConfig.ChannelsMetaTable channelsMetaTable;
     private HikariDataSource hikariDataSource;
-
-    private Service saveService;
 
     @SneakyThrows
     public @NonNull Connection getConnection() {
@@ -38,49 +34,39 @@ public final class DatabaseSQLManager implements IDatabaseManager {
 
     @Override
     public void setup(@NonNull final MetaSQLConfig metaSqlConfig) {
-        log.debug("Setup configurations of sql...");
+        log.info("Setup configurations of sql...");
 
         this.channelsMetaTable = metaSqlConfig.getChannelsMetaTable();
         this.hikariDataSource = metaSqlConfig.getHikariDataSource();
-        this.saveService = new AbstractScheduledService() {
-            @Override
-            protected void runOneIteration() {
-                save();
-            }
-
-            @Override
-            protected @NotNull Scheduler scheduler() {
-                return Scheduler.newFixedRateSchedule(0, metaSqlConfig.getAutosaveMinutes(), TimeUnit.MINUTES);
-            }
-        };
     }
 
     @Override
     public void load() {
-        log.debug("Connecting to SQL...");
+        log.info("Connecting to SQL...");
 
         this.channelMetaDatabaseSQL.load();
-
-        this.saveService.startAsync();
     }
 
     @Override
     public void save() {
-        log.debug("Saving SQL...");
+        log.info("Saving SQL...");
 
+        this.channelMetaDatabaseSQL.save();
+
+        log.info("SQL successfully saved!");
     }
 
     @Override
     public void close() {
-        this.save();
+        log.info("Closing SQL");
 
-        log.debug("Closing SQL");
+        this.save();
 
         this.hikariDataSource.close();
     }
 
     @Override
-    public @NotNull List<ChannelMeta> getChannelsMetas() {
+    public @NotNull List<SupergroupMeta> getChannelsMetas() {
         return this.channelMetaDatabaseSQL.getChannelsMetas();
     }
 }

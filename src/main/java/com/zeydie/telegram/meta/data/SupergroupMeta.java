@@ -36,18 +36,20 @@ public final class SupergroupMeta extends ChannelMeta {
     public SupergroupMeta(@NonNull final ResultSet resultSet) {
         super(resultSet);
 
-        @NonNull val table = TelegramMeta.getInstance().getDatabaseSQLManager().getChannelsMetaTable();
+        if (super.isSupergroup()) {
+            @NonNull val table = TelegramMeta.getInstance().getDatabaseSQLManager().getChannelsMetaTable();
 
-        this.setMessageCount(this.parse(resultSet.getString(table.getMessageCountColumn()), new TdApi.StatisticalValue()));
-        this.setViewerCount(this.parse(resultSet.getString(table.getViewerCountColumn()), new TdApi.StatisticalValue()));
-        this.setSenderCount(this.parse(resultSet.getString(table.getSenderCountColumn()), new TdApi.StatisticalValue()));
-        this.setMessageContentGraph(this.parse(resultSet.getString(table.getMessageContentGraphColumn()), new GraphData()));
-        this.setActionGraph(this.parse(resultSet.getString(table.getActionGraphColumn()), new GraphData()));
-        this.setDayGraph(this.parse(resultSet.getString(table.getDayGraphColumn()), new GraphData()));
-        this.setWeekGraph(this.parse(resultSet.getString(table.getWeekGraphColumn()), new GraphData()));
-        this.setTopSenders(this.parse(resultSet.getString(table.getTopSendersColumn()), new TdApi.ChatStatisticsMessageSenderInfo[]{}));
-        this.setTopAdministrators(this.parse(resultSet.getString(table.getTopAdministratorsColumn()), new TdApi.ChatStatisticsAdministratorActionsInfo[]{}));
-        this.setTopInviters(this.parse(resultSet.getString(table.getTopInvitersColumn()), new TdApi.ChatStatisticsInviterInfo[]{}));
+            this.setMessageCount(this.parse(resultSet.getString(table.getMessageCountColumn()), new TdApi.StatisticalValue()));
+            this.setViewerCount(this.parse(resultSet.getString(table.getViewerCountColumn()), new TdApi.StatisticalValue()));
+            this.setSenderCount(this.parse(resultSet.getString(table.getSenderCountColumn()), new TdApi.StatisticalValue()));
+            this.setMessageContentGraph(this.parse(resultSet.getString(table.getMessageContentGraphColumn()), new GraphData()));
+            this.setActionGraph(this.parse(resultSet.getString(table.getActionGraphColumn()), new GraphData()));
+            this.setDayGraph(this.parse(resultSet.getString(table.getDayGraphColumn()), new GraphData()));
+            this.setWeekGraph(this.parse(resultSet.getString(table.getWeekGraphColumn()), new GraphData()));
+            this.setTopSenders(this.parse(resultSet.getString(table.getTopSendersColumn()), new TdApi.ChatStatisticsMessageSenderInfo[]{}));
+            this.setTopAdministrators(this.parse(resultSet.getString(table.getTopAdministratorsColumn()), new TdApi.ChatStatisticsAdministratorActionsInfo[]{}));
+            this.setTopInviters(this.parse(resultSet.getString(table.getTopInvitersColumn()), new TdApi.ChatStatisticsInviterInfo[]{}));
+        }
     }
 
     @Override
@@ -70,6 +72,8 @@ public final class SupergroupMeta extends ChannelMeta {
 
     @Override
     public void copyOf(@NonNull final TdApi.ChatStatistics chatStatistics) {
+        super.copyOf(chatStatistics);
+
         if (chatStatistics instanceof @NonNull TdApi.ChatStatisticsSupergroup chatStatisticsSupergroup) {
             this.setSupergroup(true);
             this.setPeriod(chatStatisticsSupergroup.period);

@@ -6,7 +6,6 @@ import com.zeydie.telegram.meta.api.managers.IDatabaseManager;
 import com.zeydie.telegram.meta.api.metas.IChannelMeta;
 import com.zeydie.telegram.meta.builders.QueryBuilder;
 import com.zeydie.telegram.meta.configs.MetaSQLConfig;
-import com.zeydie.telegram.meta.data.ChannelMeta;
 import com.zeydie.telegram.meta.data.SupergroupMeta;
 import lombok.Cleanup;
 import lombok.NonNull;
@@ -33,17 +32,29 @@ public final class ChannelMetaDatabaseSQL implements IDatabase, IChannelMeta {
 
     @Override
     public void load() {
-        this.databaseManager = TelegramMeta.getInstance().getDatabaseSQLManager();
+        log.info("Loading...");
+
+        @NonNull val instance = TelegramMeta.getInstance();
+
+        this.databaseManager = instance.getDatabaseSQLManager();
         this.channelsMetaTable = this.databaseManager.getChannelsMetaTable();
+
+        this.getChannelsMetas().forEach(channelMeta -> instance.getChannelMetaManager().putOrUpdate(channelMeta));
+
+        log.info("Successfully!");
     }
 
     @Override
     public void save() {
-        this.databaseManager.getChannelsMetas()
+        log.info("Saving channels metas SQL...");
+
+        TelegramMeta.getInstance()
+                .getChannelMetaManager()
+                .getChannelsMetas()
                 .forEach(
                         channelMeta -> {
                             try {
-                                @NonNull val supergroupMeta = (SupergroupMeta) channelMeta;
+                                log.info("Saving meta for {}", channelMeta.getChannelId());
 
                                 @Cleanup val connection = getConnection();
                                 @Cleanup PreparedStatement preparedStatement = connection.prepareStatement(
@@ -51,7 +62,7 @@ public final class ChannelMetaDatabaseSQL implements IDatabase, IChannelMeta {
                                                 .table(this.channelsMetaTable.getNameTable())
                                                 .build()
                                                 .select("*")
-                                                .where(this.channelsMetaTable.getChannelIdColumn(), supergroupMeta.getChannelId())
+                                                .where(this.channelsMetaTable.getChannelIdColumn(), channelMeta.getChannelId())
                                                 .query()
                                 );
 
@@ -60,64 +71,64 @@ public final class ChannelMetaDatabaseSQL implements IDatabase, IChannelMeta {
                                         QueryBuilder.builder()
                                                 .table(this.channelsMetaTable.getNameTable())
                                                 .build()
-                                                .update(this.channelsMetaTable.getSupergroupColumn(), supergroupMeta.isSupergroup())
-                                                .update(this.channelsMetaTable.getPeriodColumn(), supergroupMeta.parseObject(supergroupMeta.getPeriod()))
-                                                .update(this.channelsMetaTable.getMemberCountColumn(), supergroupMeta.parseObject(supergroupMeta.getMemberCount()))
-                                                .update(this.channelsMetaTable.getMeanViewCountColumn(), supergroupMeta.parseObject(supergroupMeta.getMeanViewCount()))
-                                                .update(this.channelsMetaTable.getMeanShareCountColumn(), supergroupMeta.parseObject(supergroupMeta.getMeanShareCount()))
-                                                .update(this.channelsMetaTable.getEnabledNotificationsPercentageColumn(), supergroupMeta.getEnabledNotificationsPercentage())
-                                                .update(this.channelsMetaTable.getMemberCountGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getMemberCountGraph()))
-                                                .update(this.channelsMetaTable.getJoinGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getJoinGraph()))
-                                                .update(this.channelsMetaTable.getMuteGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getMuteGraph()))
-                                                .update(this.channelsMetaTable.getViewCountByHourGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getViewCountByHourGraph()))
-                                                .update(this.channelsMetaTable.getViewCountBySourceGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getViewCountBySourceGraph()))
-                                                .update(this.channelsMetaTable.getJoinBySourceGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getJoinBySourceGraph()))
-                                                .update(this.channelsMetaTable.getLanguageGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getLanguageGraph()))
-                                                .update(this.channelsMetaTable.getMessageInteractionGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getMessageInteractionGraph()))
-                                                .update(this.channelsMetaTable.getInstantViewInteractionGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getInstantViewInteractionGraph()))
-                                                .update(this.channelsMetaTable.getRecentMessageInteractionsColumn(), supergroupMeta.parseObject(supergroupMeta.getRecentMessageInteractions()))
-                                                .update(this.channelsMetaTable.getMessageCountColumn(), supergroupMeta.parseObject(supergroupMeta.getMessageCount()))
-                                                .update(this.channelsMetaTable.getViewerCountColumn(), supergroupMeta.parseObject(supergroupMeta.getViewerCount()))
-                                                .update(this.channelsMetaTable.getSenderCountColumn(), supergroupMeta.parseObject(supergroupMeta.getSenderCount()))
-                                                .update(this.channelsMetaTable.getMessageContentGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getMessageContentGraph()))
-                                                .update(this.channelsMetaTable.getActionGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getActionGraph()))
-                                                .update(this.channelsMetaTable.getDayGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getDayGraph()))
-                                                .update(this.channelsMetaTable.getWeekGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getWeekGraph()))
-                                                .update(this.channelsMetaTable.getTopSendersColumn(), supergroupMeta.parseObject(supergroupMeta.getTopSenders()))
-                                                .update(this.channelsMetaTable.getTopAdministratorsColumn(), supergroupMeta.parseObject(supergroupMeta.getTopAdministrators()))
-                                                .update(this.channelsMetaTable.getTopInvitersColumn(), supergroupMeta.parseObject(supergroupMeta.getTopInviters()))
-                                                .where(this.channelsMetaTable.getChannelIdColumn(), supergroupMeta.getChannelId())
+                                                .update(this.channelsMetaTable.getSupergroupColumn(), channelMeta.isSupergroup())
+                                                .update(this.channelsMetaTable.getPeriodColumn(), channelMeta.parseObject(channelMeta.getPeriod()))
+                                                .update(this.channelsMetaTable.getMemberCountColumn(), channelMeta.parseObject(channelMeta.getMemberCount()))
+                                                .update(this.channelsMetaTable.getMeanViewCountColumn(), channelMeta.parseObject(channelMeta.getMeanViewCount()))
+                                                .update(this.channelsMetaTable.getMeanShareCountColumn(), channelMeta.parseObject(channelMeta.getMeanShareCount()))
+                                                .update(this.channelsMetaTable.getEnabledNotificationsPercentageColumn(), channelMeta.getEnabledNotificationsPercentage())
+                                                .update(this.channelsMetaTable.getMemberCountGraphColumn(), channelMeta.parseObject(channelMeta.getMemberCountGraph()))
+                                                .update(this.channelsMetaTable.getJoinGraphColumn(), channelMeta.parseObject(channelMeta.getJoinGraph()))
+                                                .update(this.channelsMetaTable.getMuteGraphColumn(), channelMeta.parseObject(channelMeta.getMuteGraph()))
+                                                .update(this.channelsMetaTable.getViewCountByHourGraphColumn(), channelMeta.parseObject(channelMeta.getViewCountByHourGraph()))
+                                                .update(this.channelsMetaTable.getViewCountBySourceGraphColumn(), channelMeta.parseObject(channelMeta.getViewCountBySourceGraph()))
+                                                .update(this.channelsMetaTable.getJoinBySourceGraphColumn(), channelMeta.parseObject(channelMeta.getJoinBySourceGraph()))
+                                                .update(this.channelsMetaTable.getLanguageGraphColumn(), channelMeta.parseObject(channelMeta.getLanguageGraph()))
+                                                .update(this.channelsMetaTable.getMessageInteractionGraphColumn(), channelMeta.parseObject(channelMeta.getMessageInteractionGraph()))
+                                                .update(this.channelsMetaTable.getInstantViewInteractionGraphColumn(), channelMeta.parseObject(channelMeta.getInstantViewInteractionGraph()))
+                                                .update(this.channelsMetaTable.getRecentMessageInteractionsColumn(), channelMeta.parseObject(channelMeta.getRecentMessageInteractions()))
+                                                .update(this.channelsMetaTable.getMessageCountColumn(), channelMeta.parseObject(channelMeta.getMessageCount()))
+                                                .update(this.channelsMetaTable.getViewerCountColumn(), channelMeta.parseObject(channelMeta.getViewerCount()))
+                                                .update(this.channelsMetaTable.getSenderCountColumn(), channelMeta.parseObject(channelMeta.getSenderCount()))
+                                                .update(this.channelsMetaTable.getMessageContentGraphColumn(), channelMeta.parseObject(channelMeta.getMessageContentGraph()))
+                                                .update(this.channelsMetaTable.getActionGraphColumn(), channelMeta.parseObject(channelMeta.getActionGraph()))
+                                                .update(this.channelsMetaTable.getDayGraphColumn(), channelMeta.parseObject(channelMeta.getDayGraph()))
+                                                .update(this.channelsMetaTable.getWeekGraphColumn(), channelMeta.parseObject(channelMeta.getWeekGraph()))
+                                                .update(this.channelsMetaTable.getTopSendersColumn(), channelMeta.parseObject(channelMeta.getTopSenders()))
+                                                .update(this.channelsMetaTable.getTopAdministratorsColumn(), channelMeta.parseObject(channelMeta.getTopAdministrators()))
+                                                .update(this.channelsMetaTable.getTopInvitersColumn(), channelMeta.parseObject(channelMeta.getTopInviters()))
+                                                .where(this.channelsMetaTable.getChannelIdColumn(), channelMeta.getChannelId())
                                                 .query() :
                                         QueryBuilder.builder()
                                                 .table(this.channelsMetaTable.getNameTable())
                                                 .build()
-                                                .insert(this.channelsMetaTable.getSupergroupColumn(), supergroupMeta.isSupergroup())
-                                                .insert(this.channelsMetaTable.getPeriodColumn(), supergroupMeta.parseObject(supergroupMeta.getPeriod()))
-                                                .insert(this.channelsMetaTable.getChannelIdColumn(), supergroupMeta.getChannelId())
-                                                .insert(this.channelsMetaTable.getMemberCountColumn(), supergroupMeta.parseObject(supergroupMeta.getMemberCount()))
-                                                .insert(this.channelsMetaTable.getMeanViewCountColumn(), supergroupMeta.parseObject(supergroupMeta.getMeanViewCount()))
-                                                .insert(this.channelsMetaTable.getMeanShareCountColumn(), supergroupMeta.parseObject(supergroupMeta.getMeanShareCount()))
-                                                .insert(this.channelsMetaTable.getEnabledNotificationsPercentageColumn(), supergroupMeta.getEnabledNotificationsPercentage())
-                                                .insert(this.channelsMetaTable.getMemberCountGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getMemberCountGraph()))
-                                                .insert(this.channelsMetaTable.getJoinGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getJoinGraph()))
-                                                .insert(this.channelsMetaTable.getMuteGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getMuteGraph()))
-                                                .insert(this.channelsMetaTable.getViewCountByHourGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getViewCountByHourGraph()))
-                                                .insert(this.channelsMetaTable.getViewCountBySourceGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getViewCountBySourceGraph()))
-                                                .insert(this.channelsMetaTable.getJoinBySourceGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getJoinBySourceGraph()))
-                                                .insert(this.channelsMetaTable.getLanguageGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getLanguageGraph()))
-                                                .insert(this.channelsMetaTable.getMessageInteractionGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getMessageInteractionGraph()))
-                                                .insert(this.channelsMetaTable.getInstantViewInteractionGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getInstantViewInteractionGraph()))
-                                                .insert(this.channelsMetaTable.getRecentMessageInteractionsColumn(), supergroupMeta.parseObject(supergroupMeta.getRecentMessageInteractions()))
-                                                .insert(this.channelsMetaTable.getMessageCountColumn(), supergroupMeta.parseObject(supergroupMeta.getMessageCount()))
-                                                .insert(this.channelsMetaTable.getViewerCountColumn(), supergroupMeta.parseObject(supergroupMeta.getViewerCount()))
-                                                .insert(this.channelsMetaTable.getSenderCountColumn(), supergroupMeta.parseObject(supergroupMeta.getSenderCount()))
-                                                .insert(this.channelsMetaTable.getMessageContentGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getMessageContentGraph()))
-                                                .insert(this.channelsMetaTable.getActionGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getActionGraph()))
-                                                .insert(this.channelsMetaTable.getDayGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getDayGraph()))
-                                                .insert(this.channelsMetaTable.getWeekGraphColumn(), supergroupMeta.parseObject(supergroupMeta.getWeekGraph()))
-                                                .insert(this.channelsMetaTable.getTopSendersColumn(), supergroupMeta.parseObject(supergroupMeta.getTopSenders()))
-                                                .insert(this.channelsMetaTable.getTopAdministratorsColumn(), supergroupMeta.parseObject(supergroupMeta.getTopAdministrators()))
-                                                .insert(this.channelsMetaTable.getTopInvitersColumn(), supergroupMeta.parseObject(supergroupMeta.getTopInviters()))
+                                                .insert(this.channelsMetaTable.getSupergroupColumn(), channelMeta.isSupergroup())
+                                                .insert(this.channelsMetaTable.getPeriodColumn(), channelMeta.parseObject(channelMeta.getPeriod()))
+                                                .insert(this.channelsMetaTable.getChannelIdColumn(), channelMeta.getChannelId())
+                                                .insert(this.channelsMetaTable.getMemberCountColumn(), channelMeta.parseObject(channelMeta.getMemberCount()))
+                                                .insert(this.channelsMetaTable.getMeanViewCountColumn(), channelMeta.parseObject(channelMeta.getMeanViewCount()))
+                                                .insert(this.channelsMetaTable.getMeanShareCountColumn(), channelMeta.parseObject(channelMeta.getMeanShareCount()))
+                                                .insert(this.channelsMetaTable.getEnabledNotificationsPercentageColumn(), channelMeta.getEnabledNotificationsPercentage())
+                                                .insert(this.channelsMetaTable.getMemberCountGraphColumn(), channelMeta.parseObject(channelMeta.getMemberCountGraph()))
+                                                .insert(this.channelsMetaTable.getJoinGraphColumn(), channelMeta.parseObject(channelMeta.getJoinGraph()))
+                                                .insert(this.channelsMetaTable.getMuteGraphColumn(), channelMeta.parseObject(channelMeta.getMuteGraph()))
+                                                .insert(this.channelsMetaTable.getViewCountByHourGraphColumn(), channelMeta.parseObject(channelMeta.getViewCountByHourGraph()))
+                                                .insert(this.channelsMetaTable.getViewCountBySourceGraphColumn(), channelMeta.parseObject(channelMeta.getViewCountBySourceGraph()))
+                                                .insert(this.channelsMetaTable.getJoinBySourceGraphColumn(), channelMeta.parseObject(channelMeta.getJoinBySourceGraph()))
+                                                .insert(this.channelsMetaTable.getLanguageGraphColumn(), channelMeta.parseObject(channelMeta.getLanguageGraph()))
+                                                .insert(this.channelsMetaTable.getMessageInteractionGraphColumn(), channelMeta.parseObject(channelMeta.getMessageInteractionGraph()))
+                                                .insert(this.channelsMetaTable.getInstantViewInteractionGraphColumn(), channelMeta.parseObject(channelMeta.getInstantViewInteractionGraph()))
+                                                .insert(this.channelsMetaTable.getRecentMessageInteractionsColumn(), channelMeta.parseObject(channelMeta.getRecentMessageInteractions()))
+                                                .insert(this.channelsMetaTable.getMessageCountColumn(), channelMeta.parseObject(channelMeta.getMessageCount()))
+                                                .insert(this.channelsMetaTable.getViewerCountColumn(), channelMeta.parseObject(channelMeta.getViewerCount()))
+                                                .insert(this.channelsMetaTable.getSenderCountColumn(), channelMeta.parseObject(channelMeta.getSenderCount()))
+                                                .insert(this.channelsMetaTable.getMessageContentGraphColumn(), channelMeta.parseObject(channelMeta.getMessageContentGraph()))
+                                                .insert(this.channelsMetaTable.getActionGraphColumn(), channelMeta.parseObject(channelMeta.getActionGraph()))
+                                                .insert(this.channelsMetaTable.getDayGraphColumn(), channelMeta.parseObject(channelMeta.getDayGraph()))
+                                                .insert(this.channelsMetaTable.getWeekGraphColumn(), channelMeta.parseObject(channelMeta.getWeekGraph()))
+                                                .insert(this.channelsMetaTable.getTopSendersColumn(), channelMeta.parseObject(channelMeta.getTopSenders()))
+                                                .insert(this.channelsMetaTable.getTopAdministratorsColumn(), channelMeta.parseObject(channelMeta.getTopAdministrators()))
+                                                .insert(this.channelsMetaTable.getTopInvitersColumn(), channelMeta.parseObject(channelMeta.getTopInviters()))
                                                 .query();
 
                                 preparedStatement = connection.prepareStatement(query);
@@ -127,12 +138,14 @@ public final class ChannelMetaDatabaseSQL implements IDatabase, IChannelMeta {
                             }
                         }
                 );
+
+        log.info("Channels metas saved!");
     }
 
     @SneakyThrows
     @Override
-    public @NotNull List<ChannelMeta> getChannelsMetas() {
-        @NonNull val channelsMetas = new ArrayList<ChannelMeta>();
+    public @NotNull List<SupergroupMeta> getChannelsMetas() {
+        @NonNull val channelsMetas = new ArrayList<SupergroupMeta>();
 
         @Cleanup val connection = this.getConnection();
         @Cleanup val preparedStatement = connection.prepareStatement(
@@ -145,15 +158,9 @@ public final class ChannelMetaDatabaseSQL implements IDatabase, IChannelMeta {
 
         @Cleanup val resultSet = preparedStatement.executeQuery();
 
-        while (resultSet.next()) {
-            @NonNull val channelMeta = new ChannelMeta(resultSet);
-
-            if (channelMeta.isSupergroup())
-                channelsMetas.add(new SupergroupMeta(resultSet));
-            else
-                channelsMetas.add(new ChannelMeta(resultSet));
-        }
-
+        while (resultSet.next())
+            channelsMetas.add(new SupergroupMeta(resultSet));
+        
         return channelsMetas;
     }
 }

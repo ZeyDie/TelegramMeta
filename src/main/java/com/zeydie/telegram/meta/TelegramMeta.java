@@ -7,7 +7,6 @@ import com.zeydie.telegram.meta.api.managers.IChannelMetaManager;
 import com.zeydie.telegram.meta.api.managers.IDatabaseManager;
 import com.zeydie.telegram.meta.configs.MetaSQLConfig;
 import com.zeydie.telegram.meta.configs.TDLibConfig;
-import com.zeydie.telegram.meta.data.SupergroupMeta;
 import com.zeydie.telegram.meta.managers.ChannelMetaManager;
 import com.zeydie.telegram.meta.managers.DatabaseSQLManager;
 import lombok.Getter;
@@ -48,32 +47,7 @@ public final class TelegramMeta {
     private final @NotNull Service metricService = new AbstractScheduledService() {
         @Override
         protected void runOneIteration() {
-            channelMetaManager.getChannelsMetas()
-                    .forEach(
-                            channelMeta -> {
-                                val channelId = channelMeta.getChannelId();
-
-                                @Nullable val chat = tdLib.getChat(channelId);
-
-                                if (chat != null) {
-                                    @Nullable val chatStatisticsChannel = tdLib.getChatStatistics(channelId);
-
-                                    if (chatStatisticsChannel != null) {
-                                        log.debug("Updating statistics channel {} ({})", chat.title, chat.id);
-
-                                        channelMeta.copyOf(chatStatisticsChannel);
-                                    }
-
-                                    @Nullable val chatStatisticsSupergroup = tdLib.getChatStatisticsSupergroup(channelId);
-
-                                    if (chatStatisticsSupergroup != null && channelMeta instanceof @NonNull SupergroupMeta supergroupMeta) {
-                                        log.debug("Updating statistics supergroup {} ({})", chat.title, chat.id);
-
-                                        supergroupMeta.copyOf(chatStatisticsSupergroup);
-                                    }
-                                }
-                            }
-                    );
+            updateMeta();
         }
 
         @Override
@@ -93,15 +67,52 @@ public final class TelegramMeta {
     }
 
     public void init() {
+        this.metricService.startAsync();
+
         this.databaseSQLManager.load();
         this.channelMetaManager.load();
 
-        this.metricService.startAsync();
+        this.updateMeta();
     }
 
     public void stop() {
         this.metricService.stopAsync();
 
         this.databaseSQLManager.close();
+    }
+
+    public void updateMeta() {
+        this.channelMetaManager.getChannelsMetas()
+                .forEach(
+                        channelMeta -> {
+                            val channelId = channelMeta.getChannelId();
+
+                            @Nullable val chat = this.tdLib.getChat(channelId);
+
+                            if (chat != null) {
+                                @Nullable val chatStatisticsChannel = this.tdLib.getChatStatistics(channelId);
+
+                                if (chatStatisticsChannel != null) {
+                                    log.debug("Updating statistics channel {} ({})", chat.title, chat.id);
+
+                                    channelMeta.copyOf(chatStatisticsChannel);
+
+                                    log.debug("Statistics channel updated!");
+                                } else log.debug("Channel haven't statistics {} ({})", chat.title, chat.id);
+
+                                @Nullable val chatStatisticsSupergroup = this.tdLib.getChatStatisticsSupergroup(channelId);
+
+                                if (chatStatisticsSupergroup != null) {
+                                    log.debug("Updating statistics supergroup {} ({})", chat.title, chat.id);
+
+                                    channelMeta.copyOf(chatStatisticsSupergroup);
+
+                                    log.debug("Statistics channel updated!");
+                                } else log.debug("Supergroup haven't statistics {} ({})", chat.title, chat.id);
+                            } else log.debug("Can't load chat {}", channelId);
+                        }
+                );
+
+        this.databaseSQLManager.save();
     }
 }

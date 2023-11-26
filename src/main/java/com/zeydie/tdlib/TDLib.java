@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Log4j2
@@ -77,6 +78,7 @@ public final class TDLib {
 
     public @Nullable TdApi.Chat getChat(final long id) {
         @NonNull val atomicValue = new AtomicReference<TdApi.Chat>();
+        @NonNull val atomicFinished = new AtomicBoolean(false);
 
         this.client.send(
                 new TdApi.GetChat(id),
@@ -86,42 +88,59 @@ public final class TDLib {
 
                         atomicValue.set(chat);
                     } else log.error(object);
+
+                    atomicFinished.set(true);
                 }
         );
+
+        do {
+        } while (!atomicFinished.get());
 
         return atomicValue.get();
     }
 
     public @Nullable TdApi.ChatStatisticsChannel getChatStatistics(final long id) {
         @NonNull val atomicValue = new AtomicReference<TdApi.ChatStatisticsChannel>();
+        @NonNull val atomicFinished = new AtomicBoolean(false);
 
         this.client.send(
-                new TdApi.GetChatStatistics(id, true),
+                new TdApi.GetChatStatistics(id, false),
                 object -> {
                     if (object instanceof @NonNull TdApi.ChatStatisticsChannel chatStatisticsChannel) {
                         log.debug("GetChatStatistics {}", id);
 
                         atomicValue.set(chatStatisticsChannel);
-                    } else log.error(object);
+                    }
+
+                    atomicFinished.set(true);
                 }
         );
+
+        do {
+        } while (!atomicFinished.get());
 
         return atomicValue.get();
     }
 
     public @Nullable TdApi.ChatStatisticsSupergroup getChatStatisticsSupergroup(final long id) {
         @NonNull val atomicValue = new AtomicReference<TdApi.ChatStatisticsSupergroup>();
+        @NonNull val atomicFinished = new AtomicBoolean(false);
 
         this.client.send(
-                new TdApi.GetChatStatistics(id, true),
+                new TdApi.GetChatStatistics(id, false),
                 object -> {
                     if (object instanceof @NonNull TdApi.ChatStatisticsSupergroup chatStatisticsSupergroup) {
                         log.debug("GetChatStatisticsSupergroup {}", id);
 
                         atomicValue.set(chatStatisticsSupergroup);
-                    } else log.error(object);
+                    }
+
+                    atomicFinished.set(true);
                 }
         );
+
+        do {
+        } while (!atomicFinished.get());
 
         return atomicValue.get();
     }
