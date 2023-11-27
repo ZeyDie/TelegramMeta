@@ -54,6 +54,8 @@ public final class ChannelMetaDatabaseSQL implements IDatabase, IChannelMeta {
                 .forEach(
                         channelMeta -> {
                             try {
+                                if (channelMeta.getPeriod() == null) return;
+
                                 log.info("Saving meta for {}", channelMeta.getChannelId());
 
                                 @Cleanup val connection = getConnection();
@@ -160,7 +162,7 @@ public final class ChannelMetaDatabaseSQL implements IDatabase, IChannelMeta {
 
         while (resultSet.next())
             channelsMetas.add(new SupergroupMeta(resultSet));
-        
+
         return channelsMetas;
     }
 }
