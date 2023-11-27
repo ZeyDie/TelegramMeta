@@ -10,6 +10,7 @@ import java.util.*;
 
 @Builder
 public final class QueryBuilder {
+    private boolean mysql;
     private @NotNull String table;
 
     private boolean insertMode;
@@ -156,7 +157,11 @@ public final class QueryBuilder {
             }
         }
 
-        return builder.toString();
+        @NonNull val query = builder.toString();
+
+        return mysql ? query :
+                query.replaceAll("`", "")
+                        .replaceAll("'", "");
     }
 
     private @Nullable Object transformObject(@Nullable final Object object) {
