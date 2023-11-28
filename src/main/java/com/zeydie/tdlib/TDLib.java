@@ -8,6 +8,7 @@ import org.drinkless.tdlib.TdApi;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,10 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Log4j2
 public final class TDLib {
-    private static final String libcryptoDll = "tdlib/windows/libcrypto-1_1-x64";
-    private static final String libsslDll = "tdlib/windows/libssl-1_1-x64";
-    private static final String zlibDll = "tdlib/windows/zlib1";
-    private static final String tdjniDll = "tdlib/tdjni";
+    private static Path tdlibPath = Paths.get("tdlib");
 
     static {
         log.debug(System.getProperty("os.name"));
@@ -26,26 +24,32 @@ public final class TDLib {
 
         @NonNull val os = System.getProperty("os.name");
 
-        if (os != null && os.toLowerCase(Locale.ROOT).startsWith("windows")) {
-            extractAndLoadDll(libcryptoDll);
-            extractAndLoadDll(libsslDll);
-            extractAndLoadDll(zlibDll);
+        if (os != null) {
+            if (os.toLowerCase(Locale.ROOT).startsWith("windows")) {
+                tdlibPath = tdlibPath.resolve("windows");
+
+                extractAndLoadDll(tdlibPath.resolve("libcrypto-1_1-x64"));
+                extractAndLoadDll(tdlibPath.resolve("libssl-1_1-x64"));
+                extractAndLoadDll(tdlibPath.resolve("zlib1"));
+            } else if (os.toLowerCase(Locale.ROOT).startsWith("linux"))
+                tdlibPath = tdlibPath.resolve("linux");
         }
 
-        extractAndLoadDll(tdjniDll);
+        extractAndLoadDll(tdlibPath.resolve("tdjni"));
     }
 
     @SneakyThrows
-    private static void extractAndLoadDll(@NonNull final String name) {
+    private static void extractAndLoadDll(@NonNull final Path path) {
+        @NonNull val name = path.toFile().getPath();
         @Cleanup val inputStream = TDLib.class.getResourceAsStream(name);
 
         if (inputStream != null) {
-            Files.copy(inputStream, Paths.get(name));
+            Files.copy(inputStream, path);
 
             log.debug("Extracted {}", name);
         }
 
-        System.loadLibrary(name);
+        System.loadLibrary(path.toFile().getName());
     }
 
     @Getter

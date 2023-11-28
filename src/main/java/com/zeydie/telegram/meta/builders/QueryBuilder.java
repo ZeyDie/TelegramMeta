@@ -87,16 +87,16 @@ public final class QueryBuilder {
         @NonNull val builder = new StringBuilder();
 
         if (this.insertMode) {
-            builder.append("INSERT INTO `").append(this.table).append("` ");
+            builder.append("INSERT INTO ").append(this.table);
 
             for (int i = 0; i < this.insertMap.size(); i++) {
                 if (i == 0)
                     builder.append("(");
 
-                builder.append("`").append(this.insertMap.keySet().toArray()[i]).append("`");
+                builder.append(this.insertMap.keySet().toArray()[i]);
 
                 if (i < this.insertMap.size() - 1)
-                    builder.append(", ");
+                    builder.append(",");
                 else builder.append(")");
             }
 
@@ -109,7 +109,7 @@ public final class QueryBuilder {
                 builder.append("'").append(this.transformObject(this.insertMap.values().toArray()[i])).append("'");
 
                 if (i < this.insertMap.size() - 1)
-                    builder.append(", ");
+                    builder.append(",");
                 else builder.append(");");
             }
 
@@ -118,29 +118,29 @@ public final class QueryBuilder {
             builder.append("SELECT ");
 
             for (int i = 0; i < this.selectColumns.size(); i++) {
-                builder.append("`").append(this.selectColumns.get(i)).append("`");
+                builder.append(this.selectColumns.get(i));
 
                 if (i < this.insertMap.size() - 1)
-                    builder.append(", ");
+                    builder.append(",");
             }
 
-            builder.append(" FROM `").append(this.table).append("`");
+            builder.append(" FROM ").append(this.table);
 
         } else if (this.updateMode) {
-            builder.append("UPDATE `").append(this.table).append("`").append(" ");
+            builder.append("UPDATE ").append(this.table).append(" ");
             builder.append("SET ");
 
             for (int i = 0; i < this.updateMap.size(); i++) {
                 @NonNull final String column = this.updateMap.keySet().toArray(new String[]{})[i];
                 @Nullable final Object value = this.transformObject(this.updateMap.values().toArray()[i]);
 
-                builder.append("`").append(column).append("` = '").append(value).append("'");
+                builder.append(column).append(" = '").append(value).append("'");
 
                 if (i < this.updateMap.size() - 1)
-                    builder.append(", ");
+                    builder.append(",");
             }
         } else if (this.deleteMode)
-            builder.append("DELETE FROM `").append(this.table).append("`");
+            builder.append("DELETE FROM ").append(this.table);
 
         if (this.whereMode) {
             builder.append(" WHERE ");
@@ -149,7 +149,7 @@ public final class QueryBuilder {
                 @NonNull final String column = this.whereMap.keySet().toArray(new String[]{})[i];
                 @Nullable final Object value = this.transformObject(this.whereMap.values().toArray()[i]);
 
-                builder.append("`").append(column).append("` = '").append(value).append("'");
+                builder.append(column).append(" = '").append(value).append("'");
 
                 if (i < this.whereMap.size() - 1)
                     builder.append(" AND ");
