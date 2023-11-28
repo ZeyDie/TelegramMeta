@@ -35,11 +35,15 @@ repositories {
 }
 
 dependencies {
+    // https://github.com/ZeyDie/TelegramBot
+    implementation group: 'com.zeydie', name: 'TelegramBotCore', version: '0.1.9R'
     // https://github.com/ZeyDie/Simple-GSON
     implementation group: 'com.zeydie', name: 'SGson', version: '2.9.x-1.1'
 
     // https://mvnrepository.com/artifact/com.mysql/mysql-connector-j
     implementation group: 'com.mysql', name: 'mysql-connector-j', version: '8.2.0'
+    // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
+    implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.3.0'
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.1.0'
 
@@ -81,8 +85,7 @@ jar {
 
     manifest {
         attributes(
-                "Class-Path": configurations.runtimeClasspath.collect { "$librariesFolder/" + it.getName() }.join(' '),
-                "Main-Class": "com.zeydie.bot.ads.BotApplication"
+                "Class-Path": configurations.runtimeClasspath.collect { "$librariesFolder/" + it.getName() }.join(' ')
         )
     }
 }
