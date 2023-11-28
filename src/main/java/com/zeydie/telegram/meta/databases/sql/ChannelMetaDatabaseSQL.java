@@ -5,7 +5,8 @@ import com.zeydie.telegram.meta.api.IDatabase;
 import com.zeydie.telegram.meta.api.managers.IDatabaseManager;
 import com.zeydie.telegram.meta.api.metas.IChannelMeta;
 import com.zeydie.telegram.meta.builders.QueryBuilder;
-import com.zeydie.telegram.meta.configs.MetaSQLConfig;
+import com.zeydie.telegram.meta.configs.ConfigStore;
+import com.zeydie.telegram.meta.configs.data.MetaSQLConfig;
 import com.zeydie.telegram.meta.data.SupergroupMeta;
 import lombok.Cleanup;
 import lombok.NonNull;
@@ -31,17 +32,25 @@ public final class ChannelMetaDatabaseSQL implements IDatabase, IChannelMeta {
     }
 
     @Override
-    public void load() {
+    public void preInit() {
+        this.databaseManager = TelegramMeta.getInstance().getDatabaseSQLManager();
+        this.channelsMetaTable = ConfigStore.getMetaSQLConfig().getChannelsMetaTable();
+    }
+
+    @Override
+    public void init() {
         log.info("Loading...");
 
         @NonNull val instance = TelegramMeta.getInstance();
 
-        this.databaseManager = instance.getDatabaseSQLManager();
-        this.channelsMetaTable = this.databaseManager.getChannelsMetaTable();
-
         this.getChannelsMetas().forEach(channelMeta -> instance.getChannelMetaManager().putOrUpdate(channelMeta));
 
         log.info("Successfully!");
+    }
+
+    @Override
+    public void postInit() {
+        this.save();
     }
 
     @Override

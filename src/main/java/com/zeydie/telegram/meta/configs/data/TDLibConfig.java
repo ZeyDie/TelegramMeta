@@ -1,4 +1,4 @@
-package com.zeydie.telegram.meta.configs;
+package com.zeydie.telegram.meta.configs.data;
 
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;

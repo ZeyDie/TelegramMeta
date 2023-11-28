@@ -5,13 +5,11 @@ import com.google.common.util.concurrent.Service;
 import com.zeydie.tdlib.TDLib;
 import com.zeydie.telegram.meta.api.managers.IChannelMetaManager;
 import com.zeydie.telegram.meta.api.managers.IDatabaseManager;
-import com.zeydie.telegram.meta.configs.MetaSQLConfig;
-import com.zeydie.telegram.meta.configs.TDLibConfig;
 import com.zeydie.telegram.meta.managers.ChannelMetaManager;
 import com.zeydie.telegram.meta.managers.DatabaseSQLManager;
+import com.zeydie.telegrambot.TelegramBotCore;
+import com.zeydie.telegrambot.api.modules.interfaces.ISubcore;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
@@ -20,29 +18,17 @@ import org.jetbrains.annotations.Nullable;
 import java.util.concurrent.TimeUnit;
 
 @Log4j2
-public final class TelegramMeta {
+public final class TelegramMeta implements ISubcore {
     @Getter
-    private static TelegramMeta instance;
+    private static TelegramMeta instance = new TelegramMeta();
 
     @Getter
-    @NonNull
-    private final TDLib tdLib = new TDLib();
-
-    @Setter
-    @Getter
-    @NonNull
-    private TDLibConfig TDLibConfig = new TDLibConfig();
-    @Setter
-    @Getter
-    @NonNull
-    private MetaSQLConfig metaSqlConfig = new MetaSQLConfig();
+    private final @NotNull TDLib tdLib = new TDLib();
 
     @Getter
-    @NonNull
-    private final IDatabaseManager databaseSQLManager = new DatabaseSQLManager();
+    private final @NotNull IDatabaseManager databaseSQLManager = new DatabaseSQLManager();
     @Getter
-    @NonNull
-    private final IChannelMetaManager channelMetaManager = new ChannelMetaManager();
+    private final @NotNull IChannelMetaManager channelMetaManager = new ChannelMetaManager();
 
     private final @NotNull Service metricService = new AbstractScheduledService() {
         @Override
@@ -56,25 +42,41 @@ public final class TelegramMeta {
         }
     };
 
-    public TelegramMeta() {
-        instance = this;
+    @Override
+    public @NotNull String getName() {
+        return this.getClass().getName();
     }
 
-    public void start() {
-        this.tdLib.start();
-
-        this.databaseSQLManager.setup(this.metaSqlConfig);
+    @Override
+    public void launch(@Nullable final String[] strings) {
     }
 
+    @Override
+    public void preInit() {
+        this.tdLib.preInit();
+        this.databaseSQLManager.preInit();
+        this.channelMetaManager.preInit();
+    }
+
+    @Override
     public void init() {
-        this.metricService.startAsync();
+        this.tdLib.init();
+        this.databaseSQLManager.init();
+        this.channelMetaManager.init();
+    }
 
-        this.databaseSQLManager.load();
-        this.channelMetaManager.load();
+    @Override
+    public void postInit() {
+        this.tdLib.postInit();
+        this.databaseSQLManager.postInit();
+        this.channelMetaManager.postInit();
+
+        this.metricService.startAsync();
 
         this.updateMeta();
     }
 
+    @Override
     public void stop() {
         this.metricService.stopAsync();
 

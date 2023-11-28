@@ -2,8 +2,7 @@ package com.zeydie.telegram.meta.managers;
 
 import com.zaxxer.hikari.HikariDataSource;
 import com.zeydie.telegram.meta.api.managers.IDatabaseManager;
-import com.zeydie.telegram.meta.configs.MetaSQLConfig;
-import com.zeydie.telegram.meta.data.ChannelMeta;
+import com.zeydie.telegram.meta.configs.ConfigStore;
 import com.zeydie.telegram.meta.data.SupergroupMeta;
 import com.zeydie.telegram.meta.databases.sql.ChannelMetaDatabaseSQL;
 import lombok.NonNull;
@@ -19,32 +18,31 @@ public final class DatabaseSQLManager implements IDatabaseManager {
     @NotNull
     private final ChannelMetaDatabaseSQL channelMetaDatabaseSQL = new ChannelMetaDatabaseSQL();
 
-    private MetaSQLConfig.ChannelsMetaTable channelsMetaTable;
     private HikariDataSource hikariDataSource;
 
+    @Override
     @SneakyThrows
     public @NonNull Connection getConnection() {
         return this.hikariDataSource.getConnection();
     }
 
     @Override
-    public @NonNull MetaSQLConfig.ChannelsMetaTable getChannelsMetaTable() {
-        return this.channelsMetaTable;
-    }
-
-    @Override
-    public void setup(@NonNull final MetaSQLConfig metaSqlConfig) {
+    public void preInit() {
         log.info("Setup configurations of sql...");
 
-        this.channelsMetaTable = metaSqlConfig.getChannelsMetaTable();
-        this.hikariDataSource = metaSqlConfig.getHikariDataSource();
+        this.hikariDataSource = ConfigStore.getMetaSQLConfig().getHikariDataSource();
+
+        this.channelMetaDatabaseSQL.preInit();
     }
 
     @Override
-    public void load() {
-        log.info("Connecting to SQL...");
+    public void init() {
+        this.channelMetaDatabaseSQL.init();
+    }
 
-        this.channelMetaDatabaseSQL.load();
+    @Override
+    public void postInit() {
+        this.channelMetaDatabaseSQL.postInit();
     }
 
     @Override

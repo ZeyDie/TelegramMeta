@@ -1,4 +1,4 @@
-package com.zeydie.telegram.meta.configs;
+package com.zeydie.telegram.meta.configs.data;
 
 import com.mysql.cj.jdbc.Driver;
 import com.zaxxer.hikari.HikariDataSource;

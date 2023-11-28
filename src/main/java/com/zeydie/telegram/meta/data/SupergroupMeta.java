@@ -1,6 +1,6 @@
 package com.zeydie.telegram.meta.data;
 
-import com.zeydie.telegram.meta.TelegramMeta;
+import com.zeydie.telegram.meta.configs.ConfigStore;
 import lombok.*;
 import lombok.experimental.NonFinal;
 import org.drinkless.tdlib.TdApi;
@@ -37,7 +37,7 @@ public final class SupergroupMeta extends ChannelMeta {
         super(resultSet);
 
         if (super.isSupergroup()) {
-            @NonNull val table = TelegramMeta.getInstance().getDatabaseSQLManager().getChannelsMetaTable();
+            @NonNull val table = ConfigStore.getMetaSQLConfig().getChannelsMetaTable();
 
             this.setMessageCount(this.parse(resultSet.getString(table.getMessageCountColumn()), new TdApi.StatisticalValue()));
             this.setViewerCount(this.parse(resultSet.getString(table.getViewerCountColumn()), new TdApi.StatisticalValue()));

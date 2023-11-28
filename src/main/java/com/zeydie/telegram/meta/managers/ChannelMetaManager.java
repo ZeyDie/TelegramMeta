@@ -4,7 +4,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.zeydie.telegram.meta.TelegramMeta;
 import com.zeydie.telegram.meta.api.managers.IChannelMetaManager;
-import com.zeydie.telegram.meta.data.ChannelMeta;
 import com.zeydie.telegram.meta.data.SupergroupMeta;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
@@ -20,7 +19,11 @@ public final class ChannelMetaManager implements IChannelMetaManager {
             .build();
 
     @Override
-    public void load() {
+    public void preInit() {
+    }
+
+    @Override
+    public void init() {
         log.info("Loading...");
 
         TelegramMeta.getInstance()
@@ -31,14 +34,21 @@ public final class ChannelMetaManager implements IChannelMetaManager {
         log.info("Successfully!");
     }
 
+    @Override
+    public void postInit() {
+    }
+
+    @Override
     public boolean isExist(final long channelId) {
         return this.channelMetaCache.asMap().containsKey(channelId);
     }
 
+    @Override
     public @Nullable SupergroupMeta getChannelMeta(final long channelId) {
         return this.channelMetaCache.getIfPresent(channelId);
     }
 
+    @Override
     public @NonNull SupergroupMeta getOrCreate(final long channelId) {
         @Nullable var channelMeta = this.getChannelMeta(channelId);
 
@@ -53,6 +63,7 @@ public final class ChannelMetaManager implements IChannelMetaManager {
         return channelMeta;
     }
 
+    @Override
     public void putOrUpdate(@NonNull final SupergroupMeta channelMeta) {
         this.getOrCreate(channelMeta.getChannelId()).copyOf(channelMeta);
     }

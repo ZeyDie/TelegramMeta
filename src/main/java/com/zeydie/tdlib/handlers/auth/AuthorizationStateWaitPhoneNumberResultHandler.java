@@ -1,6 +1,7 @@
 package com.zeydie.tdlib.handlers.auth;
 
 import com.zeydie.telegram.meta.TelegramMeta;
+import com.zeydie.telegram.meta.configs.ConfigStore;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.drinkless.tdlib.Client;
@@ -20,7 +21,7 @@ public final class AuthorizationStateWaitPhoneNumberResultHandler implements Cli
                 .getClient()
                 .send(
                         new TdApi.SetAuthenticationPhoneNumber(
-                                TelegramMeta.getInstance().getTDLibConfig().getPhoneNumber(),
+                                ConfigStore.getTdLibConfig().getPhoneNumber(),
                                 null
                         ),
                         log::debug

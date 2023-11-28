@@ -1,7 +1,7 @@
 package com.zeydie.telegram.meta.data;
 
 import com.zeydie.sgson.SGsonBase;
-import com.zeydie.telegram.meta.TelegramMeta;
+import com.zeydie.telegram.meta.configs.ConfigStore;
 import lombok.*;
 import lombok.experimental.NonFinal;
 import org.drinkless.tdlib.TdApi;
@@ -51,7 +51,7 @@ public class ChannelMeta {
 
     @SneakyThrows
     public ChannelMeta(@NonNull final ResultSet resultSet) {
-        @NonNull val table = TelegramMeta.getInstance().getDatabaseSQLManager().getChannelsMetaTable();
+        @NonNull val table = ConfigStore.getMetaSQLConfig().getChannelsMetaTable();
 
         this.setId(resultSet.getInt(table.getIdColumn()));
         this.setChannelId(resultSet.getLong(table.getChannelIdColumn()));

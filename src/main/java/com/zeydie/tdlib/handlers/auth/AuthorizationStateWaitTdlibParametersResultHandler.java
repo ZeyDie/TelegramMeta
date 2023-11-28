@@ -2,6 +2,7 @@ package com.zeydie.tdlib.handlers.auth;
 
 import com.zeydie.tdlib.handlers.connection.ConnectionStateReadyResultHandler;
 import com.zeydie.telegram.meta.TelegramMeta;
+import com.zeydie.telegram.meta.configs.ConfigStore;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
@@ -10,7 +11,6 @@ import org.drinkless.tdlib.TdApi;
 
 @Log4j2
 public final class AuthorizationStateWaitTdlibParametersResultHandler implements Client.ResultHandler, IResultHandler {
-
     @Override
     public int getConstructor() {
         return TdApi.AuthorizationStateWaitTdlibParameters.CONSTRUCTOR;
@@ -20,8 +20,7 @@ public final class AuthorizationStateWaitTdlibParametersResultHandler implements
     public void onResult(@NonNull final TdApi.Object object) {
         log.debug("{}", object);
 
-        @NonNull val instance = TelegramMeta.getInstance();
-        @NonNull val settingsConfig = instance.getTDLibConfig();
+        @NonNull val settingsConfig = ConfigStore.getTdLibConfig();
         @NonNull val parameters = new TdApi.SetTdlibParameters();
 
         parameters.apiId = settingsConfig.getApiId();
@@ -36,7 +35,8 @@ public final class AuthorizationStateWaitTdlibParametersResultHandler implements
         parameters.applicationVersion = "1.0";
         parameters.enableStorageOptimizer = true;
 
-        instance.getTdLib()
+        TelegramMeta.getInstance()
+                .getTdLib()
                 .getClient()
                 .send(parameters, new ConnectionStateReadyResultHandler());
     }
