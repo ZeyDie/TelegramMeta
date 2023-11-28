@@ -24,7 +24,7 @@ tasks.withType(JavaExec).configureEach {
 }
 
 group 'com.zeydie'
-version '1.0'
+version '0.1.9R'
 
 repositories {
     mavenCentral()
@@ -67,13 +67,25 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
 }
 
-/*jar {
-    from {
-        configurations.runtimeClasspath.collect {it.isDirectory() ? it : zipTree(it) }
+jar {
+    def librariesFolder = "libraries"
+
+    configurations.runtimeClasspath.collect {
+        def path = it.getAbsolutePath();
+
+        copy  {
+            from path
+            into "$buildDir/libs/$librariesFolder"
+        }
     }
 
-    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
-}*/
+    manifest {
+        attributes(
+                "Class-Path": configurations.runtimeClasspath.collect { "$librariesFolder/" + it.getName() }.join(' '),
+                "Main-Class": "com.zeydie.bot.ads.BotApplication"
+        )
+    }
+}
 
 test {
     useJUnitPlatform()
