@@ -78,6 +78,8 @@ public final class TelegramMeta implements ISubcore {
 
     @Override
     public void stop() {
+        this.tdLib.stop();
+
         this.metricService.stopAsync();
 
         this.databaseSQLManager.close();

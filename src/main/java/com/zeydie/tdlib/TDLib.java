@@ -64,6 +64,10 @@ public final class TDLib implements IInitialize {
     public void postInit() {
     }
 
+    public void stop() {
+        this.client.send(new TdApi.Close(), object -> log.debug(object));
+    }
+
     @SneakyThrows
     private void extractAndLoadDll(@NonNull final Path path) {
         @NonNull val name = path.toFile().getPath();
