@@ -45,9 +45,6 @@ dependencies {
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.1.0'
 
-    // https://mvnrepository.com/artifact/org.jetbrains/annotations
-    implementation group: 'org.jetbrains', name: 'annotations', version: '24.1.0'
-
     // https://mvnrepository.com/artifact/org.atteo.classindex/classindex
     implementation group: 'org.atteo.classindex', name: 'classindex', version: '3.13'
     annotationProcessor group: 'org.atteo.classindex', name: 'classindex', version: '3.13'
