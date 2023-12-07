@@ -61,13 +61,12 @@ public final class TDLib implements IInitialize {
         Client.execute(new TdApi.SetLogVerbosityLevel(this.verbosityLevelFile));
         Client.execute(new TdApi.SetLogStream(new TdApi.LogStreamFile("logs/tdlib.log", Integer.MAX_VALUE, false)));
 
-        this.client = Client.create(new UpdateAuthorizationStateResultHandler(), e -> log.error(e.getMessage(), e), e -> log.error(e.getMessage(), e));
-
-        this.loadChats();
+        this.client = Client.create(new UpdateAuthorizationStateResultHandler(), exception -> log.error(exception.getMessage(), exception), exception -> log.error(exception.getMessage(), exception));
     }
 
     @Override
     public void postInit() {
+        this.loadChats();
     }
 
     public void stop() {

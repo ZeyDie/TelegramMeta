@@ -7,7 +7,6 @@ import com.zeydie.telegram.meta.api.managers.IChannelMetaManager;
 import com.zeydie.telegram.meta.api.managers.IDatabaseManager;
 import com.zeydie.telegram.meta.managers.ChannelMetaManager;
 import com.zeydie.telegram.meta.managers.DatabaseSQLManager;
-import com.zeydie.telegrambot.TelegramBotCore;
 import com.zeydie.telegrambot.api.modules.interfaces.ISubcore;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
