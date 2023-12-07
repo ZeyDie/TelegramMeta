@@ -50,10 +50,10 @@ public final class TDLib implements IInitialize {
     @Override
     @SneakyThrows
     public void init() {
-        Client.setLogMessageHandler(0, (verbosityLevel, message) -> log.debug(message));
+        Client.setLogMessageHandler(1023, (verbosityLevel, message) -> log.debug(message));
 
-        Client.execute(new TdApi.SetLogVerbosityLevel(0));
-        Client.execute(new TdApi.SetLogStream(new TdApi.LogStreamFile("tdlib.log", 1 << 27, false)));
+        Client.execute(new TdApi.SetLogVerbosityLevel(1023));
+        Client.execute(new TdApi.SetLogStream(new TdApi.LogStreamFile("tdlib.log", Integer.MAX_VALUE, false)));
 
         this.client = Client.create(new UpdateAuthorizationStateResultHandler(), e -> log.error(e.getMessage(), e), e -> log.error(e.getMessage(), e));
 
