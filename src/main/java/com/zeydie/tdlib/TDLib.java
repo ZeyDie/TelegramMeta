@@ -23,6 +23,12 @@ public final class TDLib implements IInitialize {
     @Setter
     @Getter
     private boolean started;
+    @Setter
+    @Getter
+    private int verbosityLevelConsole = 2;
+    @Setter
+    @Getter
+    private int verbosityLevelFile = 3;
 
     private @NotNull Path tdlibPath = Paths.get("tdlib");
 
@@ -50,10 +56,10 @@ public final class TDLib implements IInitialize {
     @Override
     @SneakyThrows
     public void init() {
-        Client.setLogMessageHandler(1023, (verbosityLevel, message) -> log.debug(message));
+        Client.setLogMessageHandler(this.verbosityLevelConsole, (verbosityLevel, message) -> log.debug(message));
 
-        Client.execute(new TdApi.SetLogVerbosityLevel(1023));
-        Client.execute(new TdApi.SetLogStream(new TdApi.LogStreamFile("tdlib.log", Integer.MAX_VALUE, false)));
+        Client.execute(new TdApi.SetLogVerbosityLevel(this.verbosityLevelFile));
+        Client.execute(new TdApi.SetLogStream(new TdApi.LogStreamFile("logs/tdlib.log", Integer.MAX_VALUE, false)));
 
         this.client = Client.create(new UpdateAuthorizationStateResultHandler(), e -> log.error(e.getMessage(), e), e -> log.error(e.getMessage(), e));
 
@@ -88,6 +94,10 @@ public final class TDLib implements IInitialize {
                         new TdApi.ChatListMain(),
                         1000
                 ),
+                log::debug
+        );
+        this.client.send(
+                new TdApi.GetChatHistory(),
                 log::debug
         );
     }
