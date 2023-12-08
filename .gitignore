@@ -26,6 +26,8 @@ replay_pid*
 .gradle
 out
 build
+logs
+tdlib
 *.cfg
 *.pex
 *.sqlite

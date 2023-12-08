@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -30,27 +31,72 @@ public final class TDLib implements IInitialize {
     @Getter
     private int verbosityLevelFile = 3;
 
-    private @NotNull Path tdlibPath = Paths.get("tdlib");
+    private static @NotNull Path TDLIB = Paths.get("tdlib");
+    private static @NotNull Path WINDOWS_TDLIB = TDLIB.resolve("windows");
+    private static @NotNull Path LINUX_TDLIB = TDLIB.resolve("linux");
+
+    public static @NotNull Path WINDOWS_LIBCRYPTO_X64 = WINDOWS_TDLIB.resolve("libcrypto-1_1-x64.dll");
+    public static @NotNull Path WINDOWS_LIBSSL_X64 = WINDOWS_TDLIB.resolve("libssl-1_1-x64.dll");
+    public static @NotNull Path WINDOWS_ZLIB = WINDOWS_TDLIB.resolve("zlib1.dll");
+    public static @NotNull Path WINDOWS_TDJNI = WINDOWS_TDLIB.resolve("tdjni.dll");
+
+    public static @NotNull Path LINUX_TDJNI = LINUX_TDLIB.resolve("tdjni.so");
 
     @Override
     public void preInit() {
-        log.debug(System.getProperty("os.name"));
-        log.debug(System.getProperty("os.arch"));
+        @NonNull val os = this.getOs();
+        @NonNull val arch = this.getArch();
 
-        @NonNull val os = System.getProperty("os.name");
+        log.debug("{} - {}", os, arch);
 
         if (os != null) {
             if (os.toLowerCase(Locale.ROOT).startsWith("windows")) {
-                this.tdlibPath = this.tdlibPath.resolve("windows");
-
-                extractAndLoadDll(this.tdlibPath.resolve("libcrypto-1_1-x64"));
-                extractAndLoadDll(this.tdlibPath.resolve("libssl-1_1-x64"));
-                extractAndLoadDll(this.tdlibPath.resolve("zlib1"));
+                extractAndLoadDll(WINDOWS_LIBCRYPTO_X64);
+                extractAndLoadDll(WINDOWS_LIBSSL_X64);
+                extractAndLoadDll(WINDOWS_ZLIB);
+                extractAndLoadDll(WINDOWS_TDJNI);
             } else if (os.toLowerCase(Locale.ROOT).startsWith("linux"))
-                this.tdlibPath = this.tdlibPath.resolve("linux");
+                extractAndLoadDll(LINUX_TDJNI);
         }
+    }
 
-        extractAndLoadDll(this.tdlibPath.resolve("tdjni"));
+    public @NotNull String getOs() {
+        return System.getProperty("os.name");
+    }
+
+    public @NotNull String getArch() {
+        return System.getProperty("os.arch");
+    }
+
+    private void extractAndLoadDll(@NonNull final Path path) {
+        this.extractDll(path);
+        this.loadDll(path);
+    }
+
+    @SneakyThrows
+    public void extractDll(@NonNull final Path path) {
+        @NonNull var name = path.toString();
+
+        while (name.contains("\\"))
+            name = name.replace("\\", "/");
+
+        @Cleanup val inputStream = TDLib.class.getClassLoader().getResourceAsStream(name);
+
+        if (inputStream != null) {
+            path.getParent().toFile().mkdirs();
+
+            Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING);
+
+            log.debug("Extracted {}", name);
+        } else log.warn("Not found {} ({})!", name, inputStream);
+    }
+
+    private void loadDll(@NonNull final Path path) {
+        @NonNull val lib = path.toFile().getName()
+                .replaceAll(".so", "")
+                .replaceAll(".dll", "");
+
+        System.loadLibrary(lib);
     }
 
     @Override
@@ -71,20 +117,6 @@ public final class TDLib implements IInitialize {
 
     public void stop() {
         this.client.send(new TdApi.Close(), object -> log.debug(object));
-    }
-
-    @SneakyThrows
-    private void extractAndLoadDll(@NonNull final Path path) {
-        @NonNull val name = path.toFile().getPath();
-        @Cleanup val inputStream = TDLib.class.getResourceAsStream(name);
-
-        if (inputStream != null) {
-            Files.copy(inputStream, path);
-
-            log.debug("Extracted {}", name);
-        }
-
-        System.loadLibrary(path.toFile().getName());
     }
 
     public void loadChats() {
