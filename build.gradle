@@ -43,7 +43,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.mysql/mysql-connector-j
     implementation group: 'com.mysql', name: 'mysql-connector-j', version: '8.2.0'
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
-    implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.1.0'
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: '6.3.0'
 
     // https://mvnrepository.com/artifact/org.atteo.classindex/classindex
     implementation group: 'org.atteo.classindex', name: 'classindex', version: '3.13'
